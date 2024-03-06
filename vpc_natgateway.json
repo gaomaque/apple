@@ -1,0 +1,472 @@
+{
+  "Description": "Cloudformation Template for the DRA NATGateway Creation",
+  "Parameters": {
+    "NATSubnetIDAZ11": {
+      "Description": "Public Subnet ID for NatGateway AZ1",
+      "Type": "AWS::EC2::Subnet::Id",
+      "Default": "subnet-012719c154949bd11"
+    },
+    "NATSubnetIDAZ21": {
+      "Description": "Public Subnet ID for NatGateway AZ2",
+      "Type": "AWS::EC2::Subnet::Id",
+      "Default": "subnet-098e8208f00ea9a1d"
+    },
+    "NumberOfIPs": {
+      "Type": "Number",
+      "Description": "Enter integer value indicating the Number of IPs need to add in the route table",
+      "Default": "1",
+      "AllowedValues": ["1","2","3","4","5","6","7","8","9","10"]
+    },
+    "DestinationCIDRIP":{
+      "Description": "Comma-delimited list of CIDR blocks",
+      "Type": "CommaDelimitedList",
+      "Default": ""
+
+    },    
+    "PrivateRouteTableIDAZ1": {
+      "Description": "Enter the Private Route Table ID for AZ1",
+      "Type": "String",
+      "Default": "rtb-0d3285bdee4a09d4d"
+    },
+    "PrivateRouteTableIDAZ2": {
+      "Description": "Enter the Private Route Table ID for AZ2",
+      "Type": "String",
+      "Default": "rtb-093183c3a6b0a3e76"
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "NatCreation"
+          },
+          "Parameters": [
+            "NATSubnetIDAZ11",
+            "NATSubnetIDAZ21",
+            "NumberOfIPs",
+            "DestinationCIDRIP",            
+            "PrivateRouteTableIDAZ1",
+            "PrivateRouteTableIDAZ2"
+          ]
+        }
+      ]
+    }
+  },
+  "Conditions": {
+    "IP1": {
+      "Fn::Or": [
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"1"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"2"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"3"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"4"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"5"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"6"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP2": {
+      "Fn::Or": [
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"2"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"3"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"4"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"5"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"6"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP3": {
+      "Fn::Or": [        
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"3"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"4"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"5"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"6"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP4": {
+      "Fn::Or": [                
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"4"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"5"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"6"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP5": {
+      "Fn::Or": [                        
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"5"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"6"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP6": {
+      "Fn::Or": [       
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"6"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP7": {
+      "Fn::Or": [        
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"7"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP8": {
+      "Fn::Or": [        
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"8"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP9": {
+      "Fn::Or": [        
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"9"]},
+        {"Fn::Equals": [{"Ref": "NumberOfIPs"},"10"]}
+      ]
+    },
+    "IP10": {
+      "Fn::Equals": [
+        {
+          "Ref": "NumberOfIPs"
+        },
+        "10"
+      ]
+    }
+  },
+  "Resources": {
+    "NATGatewayAZ1": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "NATSubnetIDAZ11"
+        }
+      }
+    },
+    "EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "VPC"
+      }
+    },
+    "NATGatewayAZ2": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "EIPAZ2",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "NATSubnetIDAZ21"
+        }
+      }
+    },
+    "EIPAZ2": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "VPC"
+      }
+    },
+    "Route1ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP1",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "0", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route2ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP2",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "1", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route3ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP3",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "2", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route4ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP4",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "3", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route5ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP5",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "4", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route6ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP6",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "5", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route7ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP7",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "6", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route8ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP8",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "7", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route9ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP9",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "8", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },
+    "Route10ToNATGatewayAZ1": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP10",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ1"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "9", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ1"
+        }
+      }
+    },    
+    "Route1ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP1",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "0", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route2ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP2",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "1", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route3ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP3",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "2", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route4ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP4",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "3", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route5ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP5",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "4", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route6ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP6",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "5", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route7ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP7",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "6", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route8ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP8",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "7", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route9ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP9",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "8", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    },
+    "Route10ToNATGatewayAZ2": {
+      "Type": "AWS::EC2::Route",
+      "Condition": "IP10",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTableIDAZ2"
+        },
+        "DestinationCidrBlock": { "Fn::Select" : [ "9", {"Ref": "DestinationCIDRIP"} ] },
+        "NatGatewayId": {
+          "Ref": "NATGatewayAZ2"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "NATGatewayAZ1": {
+      "Description": "NATGatewayAZ1 ID",
+      "Value": {
+        "Ref": "NATGatewayAZ1"
+      }
+    },
+    "NATGatewayAZ2": {
+      "Description": "NATGatewayAZ2 ID",
+      "Value": {
+        "Ref": "NATGatewayAZ2"
+      }
+    }
+  }
+}
